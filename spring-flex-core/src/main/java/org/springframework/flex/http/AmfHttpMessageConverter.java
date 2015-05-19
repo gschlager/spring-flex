@@ -133,16 +133,18 @@ public class AmfHttpMessageConverter extends AbstractHttpMessageConverter<Object
     }
     
     private Object readObject(HttpInputMessage inputMessage, AmfTrace trace) throws IOException {
-    	Amf3Input deserializer = new Amf3Input(new SerializationContext());
-    	deserializer.setInputStream(inputMessage.getBody());
-    	deserializer.setDebugTrace(trace);
-    	try {
-            return deserializer.readObject();
-        } catch (ClassNotFoundException cnfe) {
-        	throw new HttpMessageNotReadableException(AMF_ERROR, cnfe);
-        } catch (MessageException se) {
-        	throw new HttpMessageNotReadableException(AMF_ERROR, se);
-        }
+    	try(Amf3Input deserializer = new Amf3Input(new SerializationContext()))
+    	{
+	    	deserializer.setInputStream(inputMessage.getBody());
+	    	deserializer.setDebugTrace(trace);
+	    	try {
+	            return deserializer.readObject();
+	        } catch (ClassNotFoundException cnfe) {
+	        	throw new HttpMessageNotReadableException(AMF_ERROR, cnfe);
+	        } catch (MessageException se) {
+	        	throw new HttpMessageNotReadableException(AMF_ERROR, se);
+	        }
+    	}
 	}
 
 	private ActionMessage readActionMessage(HttpInputMessage inputMessage, AmfTrace trace) throws IOException {
@@ -186,17 +188,18 @@ public class AmfHttpMessageConverter extends AbstractHttpMessageConverter<Object
     private void writeObject(Object data, HttpOutputMessage outputMessage,
 			AmfTrace trace) throws IOException {
     	ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
-    	Amf3Output serializer = new Amf3Output(new SerializationContext());
-    	serializer.setOutputStream(outBuffer);
-    	serializer.setDebugTrace(trace);
-        try {
-        	serializer.writeObject(data);
-        	outBuffer.flush();
-        	outBuffer.close();
-        	outputMessage.getHeaders().setContentLength(outBuffer.size());
-        	outBuffer.writeTo(outputMessage.getBody());
-        } catch (SerializationException se) {
-        	throw new HttpMessageNotWritableException("Could not write "+data+" as AMF message.", se);
-        }
+    	try (Amf3Output serializer = new Amf3Output(new SerializationContext())) {
+	    	serializer.setOutputStream(outBuffer);
+	    	serializer.setDebugTrace(trace);
+	        try {
+	        	serializer.writeObject(data);
+	        	outBuffer.flush();
+	        	outBuffer.close();
+	        	outputMessage.getHeaders().setContentLength(outBuffer.size());
+	        	outBuffer.writeTo(outputMessage.getBody());
+	        } catch (SerializationException se) {
+	        	throw new HttpMessageNotWritableException("Could not write "+data+" as AMF message.", se);
+	        }
+    	}
 	}
 }

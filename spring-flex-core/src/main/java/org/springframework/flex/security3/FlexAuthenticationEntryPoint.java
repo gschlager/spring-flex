@@ -29,7 +29,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.flex.core.ExceptionTranslator;
 import org.springframework.flex.http.AmfHttpMessageConverter;
 import org.springframework.http.HttpInputMessage;
-import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -98,7 +97,6 @@ public class FlexAuthenticationEntryPoint extends Http403ForbiddenEntryPoint {
 		}
 		
 		HttpInputMessage inputMessage = new ServletServerHttpRequest(request);
-		HttpOutputMessage outputMessage = new ServletServerHttpResponse(response);
 		
 		if (!converter.canRead(Object.class, inputMessage.getHeaders().getContentType())) {
 			super.commence(request, response, authException);
@@ -115,28 +113,31 @@ public class FlexAuthenticationEntryPoint extends Http403ForbiddenEntryPoint {
 		}
 		
 		if (deserializedInput instanceof ActionMessage) {
-			for (ExceptionTranslator translator : this.exceptionTranslators) {
-	            if (translator.handles(authException.getClass())) {
-	                MessageException result = translator.translate(authException);
-	                ErrorMessage err = result.createErrorMessage();
-                	MessageBody body = (MessageBody) ((ActionMessage) deserializedInput).getBody(0);
-                	Message amfInputMessage = body.getDataAsMessage(); 
-                	err.setCorrelationId(amfInputMessage.getMessageId());
-                	err.setDestination(amfInputMessage.getDestination());
-                	err.setClientId(amfInputMessage.getClientId());
-                	ActionMessage responseMessage = new ActionMessage();
-                    responseMessage.setVersion(((ActionMessage)deserializedInput).getVersion());
-                    MessageBody responseBody = new MessageBody();
-                    responseMessage.addBody(responseBody);
-                    responseBody.setData(err);
-                    responseBody.setTargetURI(body.getResponseURI());
-                    responseBody.setReplyMethod(MessageIOConstants.STATUS_METHOD);
-                    converter.write(responseMessage, amfMediaType, outputMessage);
-                    response.flushBuffer();
-                    return;
-	            }
-	        }
+			try (ServletServerHttpResponse outputMessage = new ServletServerHttpResponse(response)) {	
+				for (ExceptionTranslator translator : this.exceptionTranslators) {
+		            if (translator.handles(authException.getClass())) {
+		                MessageException result = translator.translate(authException);
+		                ErrorMessage err = result.createErrorMessage();
+	                	MessageBody body = (MessageBody) ((ActionMessage) deserializedInput).getBody(0);
+	                	Message amfInputMessage = body.getDataAsMessage(); 
+	                	err.setCorrelationId(amfInputMessage.getMessageId());
+	                	err.setDestination(amfInputMessage.getDestination());
+	                	err.setClientId(amfInputMessage.getClientId());
+	                	ActionMessage responseMessage = new ActionMessage();
+	                    responseMessage.setVersion(((ActionMessage)deserializedInput).getVersion());
+	                    MessageBody responseBody = new MessageBody();
+	                    responseMessage.addBody(responseBody);
+	                    responseBody.setData(err);
+	                    responseBody.setTargetURI(body.getResponseURI());
+	                    responseBody.setReplyMethod(MessageIOConstants.STATUS_METHOD);
+	                    converter.write(responseMessage, amfMediaType, outputMessage);
+	                    response.flushBuffer();
+	                    return;
+		            }
+		        }
+			}
 		}
+		
 		super.commence(request, response, authException);
 	}
 

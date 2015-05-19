@@ -128,21 +128,23 @@ public class AmfHttpMessageConverterTests {
 
     private byte[] serializeToByteArray(Object data) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Amf3Output serializer = new Amf3Output(new SerializationContext());
-        serializer.setOutputStream(out);
-        serializer.writeObject(data);
-        try {
-            return out.toByteArray();
-        } finally {
-            out.close();
+        try (Amf3Output serializer = new Amf3Output(new SerializationContext())) {
+	        serializer.setOutputStream(out);
+	        serializer.writeObject(data);
+	        try {
+	            return out.toByteArray();
+	        } finally {
+	            out.close();
+	        }
         }
     }
 
     private Object deserializeResponse() throws ClassNotFoundException, IOException {
-        Amf3Input deserializer = new Amf3Input(new SerializationContext());
-        this.request.setContent(this.response.getContentAsByteArray());
-        deserializer.setInputStream(this.request.getInputStream());
-        return deserializer.readObject();
+        try (Amf3Input deserializer = new Amf3Input(new SerializationContext())) {
+	        this.request.setContent(this.response.getContentAsByteArray());
+	        deserializer.setInputStream(this.request.getInputStream());
+	        return deserializer.readObject();
+        }
     }
 
     private ActionMessage deserializeResponseToActionMessage() throws ClassNotFoundException, IOException {

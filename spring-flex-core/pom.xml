@@ -28,7 +28,7 @@
                                 <configuration>
                                     <breakiterator>true</breakiterator>
                                     <header>Spring BlazeDS Integration</header>
-                                    <source>1.6</source>
+                                    <source>1.8</source>
                                     <quiet>true</quiet>
                                     <javadocDirectory>${project.basedir}/../javadoc</javadocDirectory>
                                     <overview>${project.basedir}/../javadoc/overview.html</overview>
@@ -49,7 +49,7 @@
 			</build>
 		</profile>
 	</profiles>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -96,20 +96,20 @@
 			<artifactId>spring-webmvc</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.adobe.blazeds</groupId>
-			<artifactId>blazeds-core</artifactId>
+			<groupId>org.apache.flex.blazeds</groupId>
+			<artifactId>flex-messaging-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.adobe.blazeds</groupId>
-			<artifactId>blazeds-common</artifactId>
+			<groupId>org.apache.flex.blazeds</groupId>
+			<artifactId>flex-messaging-common</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.adobe.blazeds</groupId>
-			<artifactId>blazeds-proxy</artifactId>
+			<groupId>org.apache.flex.blazeds</groupId>
+			<artifactId>flex-messaging-proxy</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.adobe.blazeds</groupId>
-			<artifactId>blazeds-remoting</artifactId>
+			<groupId>org.apache.flex.blazeds</groupId>
+			<artifactId>flex-messaging-remoting</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>javax.jms</groupId>
@@ -186,5 +186,5 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 </project>

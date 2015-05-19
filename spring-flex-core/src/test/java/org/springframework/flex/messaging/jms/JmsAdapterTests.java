@@ -223,17 +223,19 @@ public class JmsAdapterTests extends AbstractMessageBrokerTests {
         Destination dest = new ActiveMQTopic("test.topic");
         properties.addPropertyValue("connectionFactory", cf);
         properties.addPropertyValue("jmsDestination", dest);
-        StaticApplicationContext context = new StaticApplicationContext();
-        context.registerPrototype(adapterBeanName, JmsAdapter.class, properties);
-
-        JmsAdapter adapter = (JmsAdapter) context.getBean(adapterBeanName);
-        MessageDestination destination = new MessageDestination();
-        destination.setId(DEST_ID);
-        destination.setService(getMessageService());
-        adapter.setDestination(destination);
-        adapter.setApplicationEventPublisher(publisher);
-        adapter.start();
-        return adapter;
+        
+        try (StaticApplicationContext context = new StaticApplicationContext()) {
+	        context.registerPrototype(adapterBeanName, JmsAdapter.class, properties);
+	
+	        JmsAdapter adapter = (JmsAdapter) context.getBean(adapterBeanName);
+	        MessageDestination destination = new MessageDestination();
+	        destination.setId(DEST_ID);
+	        destination.setService(getMessageService());
+	        adapter.setDestination(destination);
+	        adapter.setApplicationEventPublisher(publisher);
+	        adapter.start();
+	        return adapter;
+        }
     }
     
     private MessageService getMessageService() throws Exception {

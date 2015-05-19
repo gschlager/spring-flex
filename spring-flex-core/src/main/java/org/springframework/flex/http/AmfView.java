@@ -114,13 +114,14 @@ public class AmfView extends AbstractView {
             
             ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
             SerializationContext context = new SerializationContext();
-            Amf3Output out = new Amf3Output(context);
-            if (trace != null) {
-            	out.setDebugTrace(trace);
+            try (Amf3Output out = new Amf3Output(context)) {
+	            if (trace != null) {
+	            	out.setDebugTrace(trace);
+	            }
+	            out.setOutputStream(outBuffer);
+	            out.writeObject(value);
+	            out.flush();
             }
-            out.setOutputStream(outBuffer);
-            out.writeObject(value);
-            out.flush();
             
             outBuffer.flush();
             
